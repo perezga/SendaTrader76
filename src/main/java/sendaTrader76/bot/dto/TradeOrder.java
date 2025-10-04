@@ -1,39 +1,22 @@
 package sendaTrader76.bot.dto;
 
+import com.oanda.v20.transaction.StopLossOrderTransaction;
+import com.oanda.v20.transaction.Transaction;
+
 public class TradeOrder {
-	private String lastTransactionID;
+    private StopLossOrderTransaction stopLossOrderTransaction;
 
-	private StopLossOrderTransaction stopLossOrderTransaction;
+    public TradeOrder(Transaction stopLossOrderTransaction) {
+        if (stopLossOrderTransaction instanceof StopLossOrderTransaction) {
+            this.stopLossOrderTransaction = (StopLossOrderTransaction) stopLossOrderTransaction;
+        }
+    }
 
-	private String[] relatedTransactionIDs;
+    public StopLossOrderTransaction getStopLossOrderTransaction() {
+        return stopLossOrderTransaction;
+    }
 
-	public String getLastTransactionID() {
-		return lastTransactionID;
-	}
-
-	public void setLastTransactionID(String lastTransactionID) {
-		this.lastTransactionID = lastTransactionID;
-	}
-
-	public StopLossOrderTransaction getStopLossOrderTransaction() {
-		return stopLossOrderTransaction;
-	}
-
-	public void setStopLossOrderTransaction(StopLossOrderTransaction stopLossOrderTransaction) {
-		this.stopLossOrderTransaction = stopLossOrderTransaction;
-	}
-
-	public String[] getRelatedTransactionIDs() {
-		return relatedTransactionIDs;
-	}
-
-	public void setRelatedTransactionIDs(String[] relatedTransactionIDs) {
-		this.relatedTransactionIDs = relatedTransactionIDs;
-	}
-
-	@Override
-	public String toString() {
-		return "ClassPojo [lastTransactionID = " + lastTransactionID + ", stopLossOrderTransaction = " + stopLossOrderTransaction
-				+ ", relatedTransactionIDs = " + relatedTransactionIDs + "]";
-	}
+    public void setStopLossOrderTransaction(StopLossOrderTransaction stopLossOrderTransaction) {
+        this.stopLossOrderTransaction = stopLossOrderTransaction;
+    }
 }

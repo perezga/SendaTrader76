@@ -12,8 +12,18 @@ public class Order {
 	private String units;
 
 	private StopLossOnFill stopLossOnFill;
+
+	private String tradeId;
 	
 	//private TrailingStopLossOnFill trailingStopLossOnFill;
+
+	public String getTradeId() {
+		return tradeId;
+	}
+
+	public void setTradeId(String tradeId) {
+		this.tradeId = tradeId;
+	}
 
 	public String getPositionFill() {
 		return positionFill;

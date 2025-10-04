@@ -1,169 +1,139 @@
 package sendaTrader76.bot.services;
 
+import com.oanda.v20.Context;
+import com.oanda.v20.ExecuteException;
+import com.oanda.v20.RequestException;
+import com.oanda.v20.account.AccountID;
+import com.oanda.v20.order.*;
+import com.oanda.v20.pricing.PricingGetResponse;
+import com.oanda.v20.primitives.InstrumentName;
+import com.oanda.v20.trade.TradeSetDependentOrdersRequest;
+import com.oanda.v20.trade.TradeSetDependentOrdersResponse;
+import com.oanda.v20.trade.TradeSpecifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-
 import sendaTrader76.bot.dto.InstrumentType;
 import sendaTrader76.bot.dto.OpenTrades;
-import sendaTrader76.bot.dto.OrderClose;
-import sendaTrader76.bot.dto.OrderFillTransaction;
 import sendaTrader76.bot.dto.OrderRequest;
 import sendaTrader76.bot.dto.OrderResponse;
 import sendaTrader76.bot.dto.PricesResponse;
 import sendaTrader76.bot.dto.StopLossOrderRequest;
 import sendaTrader76.bot.dto.TradeOrder;
 import sendaTrader76.bot.dto.TradeOrderRequest;
+import com.oanda.v20.position.PositionCloseRequest;
+import com.oanda.v20.position.PositionCloseResponse;
+import com.oanda.v20.trade.TradeListOpenResponse;
+
+import java.util.Collections;
 
 @Component
 public class AccountServiceOanda implements AccountService {
 
-	private static final Logger log = LoggerFactory.getLogger(AccountServiceOanda.class);
+    private static final Logger log = LoggerFactory.getLogger(AccountServiceOanda.class);
 
-	@Autowired
-	private RestTemplate restTemplate;
+    @Autowired
+    private Context oandaContext;
 
-	@Autowired
-	CandleService candleService;
-	
+    @Autowired
+    private AccountID oandaAccountId;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+    @Override
+    public PricesResponse getPrice(String accountId, InstrumentType instrument) {
+        try {
+            PricingGetResponse response = oandaContext.pricing.get(
+                    new AccountID(accountId),
+                    Collections.singletonList(new InstrumentName(instrument.name()))
+            );
+            return new PricesResponse(response.getPrices());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error getting price", e);
+            return null;
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#getPrice(java.lang.String, sendaTrader76.bot.dto.InstrumentType)
-	 */
-	@Override
-	public PricesResponse getPrice(String accountId, InstrumentType instrument) {
-		PricesResponse pricesResponse = restTemplate.getForEntity("/v3/accounts/" + accountId + "/pricing?instruments=" + instrument,
-				PricesResponse.class).getBody();
-		return pricesResponse;
-	}
+    @Override
+    public OrderResponse postOrder(String accountId, OrderRequest orderRequest) {
+        try {
+            OrderCreateRequest request = new OrderCreateRequest(new AccountID(accountId));
+            request.setOrder(orderRequest.toOandaOrderRequest());
+            OrderCreateResponse response = oandaContext.order.create(request);
+            return new OrderResponse(response.getOrderFillTransaction());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error posting order", e);
+            return null;
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#postOrder(java.lang.String, sendaTrader76.bot.dto.OrderRequest)
-	 */
-	@Override
-	public OrderResponse postOrder(String accountId, OrderRequest orderRequest) {
+    @Override
+    public void postOrder(String accountId, StopLossOrderRequest stopLossOrderRequest) {
+        try {
+            OrderCreateRequest request = new OrderCreateRequest(new AccountID(accountId));
+            request.setOrder(stopLossOrderRequest.toOandaOrderRequest());
+            oandaContext.order.create(request);
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error posting stop loss order", e);
+        }
+    }
 
-		// System.out.println(gson.toJson(orderRequest));
+    @Override
+    public OrderResponse putOrder(String accountId, StopLossOrderRequest stopLossOrderRequest, String orderId) {
+        try {
+            OrderReplaceRequest request = new OrderReplaceRequest(new AccountID(accountId), new OrderSpecifier(orderId));
+            request.setOrder(stopLossOrderRequest.toOandaOrderRequest());
+            OrderReplaceResponse response = oandaContext.order.replace(request);
+            return new OrderResponse(response.getOrderFillTransaction());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error putting order", e);
+            return null;
+        }
+    }
 
-		HttpEntity<OrderRequest> requestEntity = new HttpEntity<OrderRequest>(orderRequest);
+    @Override
+    public TradeOrder postTrade(String accountId, TradeOrderRequest tradeOrderRequest, String traderId) {
+        try {
+            TradeSetDependentOrdersRequest request = new TradeSetDependentOrdersRequest(new AccountID(accountId), new TradeSpecifier(traderId));
+            request.setStopLoss(tradeOrderRequest.getStopLossOnFill().toOandaStopLossDetails());
+            TradeSetDependentOrdersResponse response = oandaContext.trade.setDependentOrders(request);
+            return new TradeOrder(response.getStopLossOrderTransaction());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error posting trade", e);
+            return null;
+        }
+    }
 
-		HttpEntity<OrderResponse> response = restTemplate.exchange(
-				"/v3/accounts/{accountId}/orders", HttpMethod.POST, requestEntity,
-				OrderResponse.class, accountId);
+    @Override
+    public OrderResponse closeOrder(String accountId, InstrumentType instrumentType, String positionType) {
+        try {
+            PositionCloseRequest request = new PositionCloseRequest(new AccountID(accountId), new InstrumentName(instrumentType.name()));
+            if ("SHORT".equals(positionType)) {
+                request.setShortUnits("ALL");
+            } else {
+                request.setLongUnits("ALL");
+            }
+            PositionCloseResponse response = oandaContext.position.close(request);
+            return new OrderResponse(response.getShortOrderFillTransaction() != null ? response.getShortOrderFillTransaction() : response.getLongOrderFillTransaction());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error closing order", e);
+            return null;
+        }
+    }
 
-		return response.getBody();
-	}
+    @Override
+    public OrderResponse getOpenPosition(String accountId) {
+        // This method is deprecated in v20. Use getOpenTrades instead.
+        return null;
+    }
 
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#postOrder(java.lang.String, sendaTrader76.bot.dto.StopLossOrderRequest)
-	 */
-	@Override
-	public void postOrder(String accountId, StopLossOrderRequest stopLossOrderRequest) {
-
-		// Gson gson;
-
-		HttpEntity<StopLossOrderRequest> requestEntity = new HttpEntity<StopLossOrderRequest>(stopLossOrderRequest);
-
-		HttpEntity<OrderResponse> response = restTemplate.exchange(
-				"/v3/accounts/{accountId}/orders", HttpMethod.POST, requestEntity,
-				OrderResponse.class, accountId);
-	}
-
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#putOrder(java.lang.String, sendaTrader76.bot.dto.StopLossOrderRequest, java.lang.String)
-	 */
-	@Override
-	public OrderResponse putOrder(String accountId, StopLossOrderRequest stopLossOrderRequest, String orderId) {
-
-		// log.info("OrderId " + orderId);
-		// log.info(gson.toJson(stopLossOrderRequest));
-
-		HttpEntity<StopLossOrderRequest> requestEntity = new HttpEntity<StopLossOrderRequest>(stopLossOrderRequest);
-
-		HttpEntity<OrderResponse> response = restTemplate.exchange(
-				"/v3/accounts/{accountId}/orders/{orderId}", HttpMethod.PUT, requestEntity,
-				OrderResponse.class, accountId, orderId);
-
-		return response.getBody();
-	}
-
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#postTrade(java.lang.String, sendaTrader76.bot.dto.TradeOrderRequest, java.lang.String)
-	 */
-	@Override
-	public TradeOrder postTrade(String accountId, TradeOrderRequest tradeOrderRequest, String traderId) {
-		
-		// log.info("OrderId " + orderId);
-		try {
-			log.info(objectMapper.writeValueAsString(tradeOrderRequest));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		HttpEntity<TradeOrderRequest> requestEntity = new HttpEntity<TradeOrderRequest>(tradeOrderRequest);
-
-		HttpEntity<TradeOrder> response = restTemplate.exchange(
-				"/v3/accounts/{accountId}/trades/{orderId}/orders", HttpMethod.PUT, requestEntity,
-				TradeOrder.class, accountId, traderId);
-
-		return response.getBody();
-	}
-
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#closeOrder(java.lang.String, sendaTrader76.bot.dto.InstrumentType, java.lang.String)
-	 */
-	@Override
-	public OrderResponse closeOrder(String accountId, InstrumentType instrumentType, String positionType) {
-
-		OrderClose orderClose = new OrderClose();
-		if ("SHORT".equals(positionType)) {
-			orderClose.setShortUnits("ALL");
-		} else {
-			orderClose.setLongUnits("ALL");
-		}
-
-		// log.info(gson.toJson(orderClose));
-
-		HttpEntity<OrderClose> requestEntity = new HttpEntity<OrderClose>(orderClose);
-
-		HttpEntity<OrderResponse> response = restTemplate.exchange(
-				"/v3/accounts/{accountId}/positions/{instrumentType}/close",
-				HttpMethod.PUT, requestEntity, OrderResponse.class, accountId, instrumentType);
-
-		return response.getBody();
-	}
-
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#getOpenPosition(java.lang.String)
-	 */
-	@Override
-	public OrderResponse getOpenPosition(String accountId) {
-
-		HttpEntity<OrderResponse> response = restTemplate.getForEntity("/v3/accounts/{accountId}/openPositions", OrderResponse.class, accountId);
-
-		return response.getBody();
-	}
-	
-	/* (non-Javadoc)
-	 * @see sendaTrader76.bot.services.AccountService#getOpenTrades(java.lang.String)
-	 */
-	@Override
-	public OpenTrades getOpenTrades(String accountId) {
-
-		HttpEntity<OpenTrades> response = restTemplate.getForEntity("/v3/accounts/{accountId}/openTrades", OpenTrades.class, accountId);
-
-		return response.getBody();
-	}
+    @Override
+    public OpenTrades getOpenTrades(String accountId) {
+        try {
+            TradeListOpenResponse response = oandaContext.trade.listOpen(new AccountID(accountId));
+            return new OpenTrades(response.getTrades());
+        } catch (RequestException | ExecuteException e) {
+            log.error("Error getting open trades", e);
+            return null;
+        }
+    }
 }

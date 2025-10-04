@@ -1,35 +1,20 @@
 package sendaTrader76.bot.dto;
 
+import com.oanda.v20.trade.Trade;
 import java.util.List;
 
 public class OpenTrades {
-	    private String lastTransactionID;
+    private List<Trade> trades;
 
-	    private List<Trades> trades;
+    public OpenTrades(List<Trade> trades) {
+        this.trades = trades;
+    }
 
-	    public String getLastTransactionID ()
-	    {
-	        return lastTransactionID;
-	    }
+    public List<Trade> getTrades() {
+        return trades;
+    }
 
-	    public void setLastTransactionID (String lastTransactionID)
-	    {
-	        this.lastTransactionID = lastTransactionID;
-	    }
-
-	    public List<Trades> getTrades ()
-	    {
-	        return trades;
-	    }
-
-	    public void setTrades (List<Trades> trades)
-	    {
-	        this.trades = trades;
-	    }
-
-	    @Override
-	    public String toString()
-	    {
-	        return "ClassPojo [lastTransactionID = "+lastTransactionID+", trades = "+trades+"]";
-	    }
-	}
+    public void setTrades(List<Trade> trades) {
+        this.trades = trades;
+    }
+}
