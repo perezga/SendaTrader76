@@ -1,19 +1,13 @@
 package sendaTrader76.bot.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-@JsonInclude(Include.NON_NULL)
 public class TradeOrderRequest {
+    private StopLossOnFill stopLossOnFill;
 
-	private StopLossDetail stopLoss;
+    public StopLossOnFill getStopLossOnFill() {
+        return stopLossOnFill;
+    }
 
-	public StopLossDetail getStopLoss() {
-		return stopLoss;
-	}
-
-	public void setStopLoss(StopLossDetail stopLoss) {
-		this.stopLoss = stopLoss;
-	}
-
+    public void setStopLossOnFill(StopLossOnFill stopLossOnFill) {
+        this.stopLossOnFill = stopLossOnFill;
+    }
 }

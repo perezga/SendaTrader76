@@ -1,352 +1,263 @@
 package sendaTrader76.bot.strategies;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sendaTrader76.bot.dto.*;
+import sendaTrader76.bot.services.AccountService;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import sendaTrader76.bot.dto.BollingerBands;
-import sendaTrader76.bot.dto.Candle;
-import sendaTrader76.bot.dto.InstrumentType;
-import sendaTrader76.bot.dto.OpenTrades;
-import sendaTrader76.bot.dto.Order;
-import sendaTrader76.bot.dto.OrderRequest;
-import sendaTrader76.bot.dto.OrderResponse;
-import sendaTrader76.bot.dto.Price;
-import sendaTrader76.bot.dto.StopLossDetail;
-import sendaTrader76.bot.dto.StopLossOnFill;
-import sendaTrader76.bot.dto.StopLossOrder;
-import sendaTrader76.bot.dto.StopLossOrderRequest;
-import sendaTrader76.bot.dto.TradeOrderRequest;
-import sendaTrader76.bot.services.AccountService;
-
 public class BollingerStrategy {
 
-	private static final Logger log = LoggerFactory.getLogger(BollingerStrategy.class);
+    private static final Logger log = LoggerFactory.getLogger(BollingerStrategy.class);
 
-	private AccountService accountService;
-	private BigDecimal openPositionPrice;
-	private String positionType;
+    private AccountService accountService;
+    private BigDecimal openPositionPrice;
+    private String positionType;
 
-	private boolean shortPositionWait = false;
-	private boolean longPositionWait = false;
-	private BigDecimal totalEarnings = BigDecimal.ZERO;
-	private boolean waitForcandleInsideBands = false;
-	private BigDecimal stopLoss;
-	private String tradeId;
-	private boolean touchedBand = false;
-	private StrategyResults strategyResults;
+    private boolean shortPositionWait = false;
+    private boolean longPositionWait = false;
+    private BigDecimal totalEarnings = BigDecimal.ZERO;
+    private boolean waitForcandleInsideBands = false;
+    private BigDecimal stopLoss;
+    private String tradeId;
+    private boolean touchedBand = false;
+    private StrategyResults strategyResults;
 
-	public BollingerStrategy(AccountService accountService) {
-		this.accountService = accountService;
-		this.strategyResults = new StrategyResults();
-	}
+    public BollingerStrategy(AccountService accountService) {
+        this.accountService = accountService;
+        this.strategyResults = new StrategyResults();
+    }
 
-	public void executeTask(Price price, String accountId, InstrumentType instrument, BollingerBands bollinger, Candle lastCandle) {
+    public void executeTask(Price price, String accountId, InstrumentType instrument, BollingerBands bollinger, Candle lastCandle) {
 
-		final BigDecimal currentBidPrice = BigDecimal.valueOf(price.getAsks()[price.getAsks().length - 1].getPrice());// Highest
-																														// ask
-		final BigDecimal currentAskPrice = BigDecimal.valueOf(price.getBids()[0].getPrice());// lowest
-																								// bid
-		final BigDecimal currentMidPrice = currentBidPrice.add(currentAskPrice).divide(BigDecimal.valueOf(2));
+        final BigDecimal currentBidPrice = price.getCloseoutAsk();
+        final BigDecimal currentAskPrice = price.getCloseoutBid();
+        final BigDecimal currentMidPrice = currentBidPrice.add(currentAskPrice).divide(BigDecimal.valueOf(2));
 
-		if (isOpenPositions(accountId)) {
-				setTraillingStopIfNeeded(positionType, price, accountId);
-				/*if (touchedBand) {
+        if (isOpenPositions(accountId)) {
+            setTraillingStopIfNeeded(positionType, price, accountId);
+        } else {
+            if (waitForcandleInsideBands) {
+                if (longPositionWait
+                        && (lastCandle.getMid().getL().compareTo(bollinger.getLowerBand()) > 0)
+                        && (lastCandle.getMid().getO().compareTo(lastCandle.getMid().getC()) < 0)) {
 
-					if ("LONG".equals(positionType) && lastCandle.getMid().getH().compareTo(bollinger.getUpperBand()) < 0) {
+                    OrderResponse orderResponse = postOrderLong(accountId, instrument, currentBidPrice);
 
-						sendTradeOrder(accountId, instrument, currentBidPrice, positionType);
-						touchedBand = false;
+                    if (orderResponse == null || orderResponse.getOrderFillTransaction() == null) {
+                        log.info("Order closed right before opened.");
+                        waitForcandleInsideBands = false;
+                        shortPositionWait = false;
+                        longPositionWait = false;
+                        return;
+                    }
 
-					} else if ("SHORT".equals(positionType) && lastCandle.getMid().getL().compareTo(bollinger.getLowerBand()) > 0) {
+                    openPositionPrice = orderResponse.getOrderFillTransaction().getPrice().bigDecimalValue();
+                    tradeId = orderResponse.getOrderFillTransaction().getTradeOpened().getTradeID().toString();
+                    positionType = "LONG";
+                    waitForcandleInsideBands = false;
+                    longPositionWait = false;
+                    shortPositionWait = false;
 
-						sendTradeOrder(accountId, instrument, currentAskPrice, positionType);
-						touchedBand = false;
+                    log.info("Time: " + price.getTime());
+                    log.info("Open Position (Long) " + openPositionPrice);
+                    log.info("Stop loss: " + stopLoss);
 
-					}
-				} else {
-					if ("LONG".equals(positionType) && lastCandleTouchedUpperBand(lastCandle, bollinger)) {
-						touchedBand = true;
+                } else if (shortPositionWait
+                        && (lastCandle.getMid().getH().compareTo(bollinger.getUpperBand()) < 0)
+                        && (lastCandle.getMid().getC().compareTo(lastCandle.getMid().getO()) < 0)) {
 
-						log.info("Time: " + price.getTime());
-						log.info("Touched Upper Band");
+                    OrderResponse orderResponse = postOrderShort(accountId, instrument, currentAskPrice);
 
-					} else if ("SHORT".equals(positionType) && lastCandleTouchedLowerBand(lastCandle, bollinger)) {
-						touchedBand = true;
+                    if (orderResponse == null || orderResponse.getOrderFillTransaction() == null) {
+                        log.info("Order closed right before opened.");
+                        waitForcandleInsideBands = false;
+                        shortPositionWait = false;
+                        longPositionWait = false;
+                        return;
+                    }
 
-						log.info("Time: " + price.getTime());
-						log.info("Touched Lower Band");
+                    openPositionPrice = orderResponse.getOrderFillTransaction().getPrice().bigDecimalValue();
+                    tradeId = orderResponse.getOrderFillTransaction().getTradeOpened().getTradeID().toString();
+                    positionType = "SHORT";
+                    waitForcandleInsideBands = false;
+                    shortPositionWait = false;
+                    longPositionWait = false;
 
-					}
-				}*/
-			
+                    log.info("Time: " + price.getTime());
+                    log.info("Open Position (Short) " + openPositionPrice);
+                    log.info("Stop loss: " + stopLoss);
+                }
+            } else {
+                if (lastCandleTouchedLowerBand(lastCandle, bollinger) && lastCandleTouchedUpperBand(lastCandle, bollinger)) {
+                    log.info("Last candle touched upper and lower bands so ignoring.");
+                } else if (lastCandleTouchedLowerBand(lastCandle, bollinger)) {
+                    waitForcandleInsideBands = true;
+                    longPositionWait = true;
+                    shortPositionWait = false;
 
-		} else {
-			if (waitForcandleInsideBands) {
-				if (longPositionWait
-						&& (lastCandle.getMid().getL().compareTo(bollinger.getLowerBand()) > 0) // candlestick
-																								// is
-																								// above
-																								// lowerbadn
-						&& (lastCandle.getMid().getO().compareTo(lastCandle.getMid().getC()) < 0)) { // Candlestick
-																										// is
-																										// green
+                    log.info("Time: " + price.getTime());
+                    log.info("Waiting for candle to be inside bands before opening position. current price "
+                            + currentMidPrice + "  lower band " + bollinger.getLowerBand());
+                } else if (lastCandleTouchedUpperBand(lastCandle, bollinger)) {
+                    waitForcandleInsideBands = true;
+                    shortPositionWait = true;
+                    longPositionWait = false;
 
-					OrderResponse orderResponse = postOrderLong(accountId, instrument, currentBidPrice);
+                    log.info("Time: " + price.getTime());
+                    log.info("Waiting for candle to be inside bands before opening position. current price "
+                            + currentMidPrice + "  higuer band " + bollinger.getUpperBand());
+                }
+            }
+        }
+    }
 
-					if (orderResponse == null || orderResponse.getOrderFillTransaction() == null) {
-						log.info("Order closed right before opened.");
-						waitForcandleInsideBands = false;
-						shortPositionWait = false;
-						longPositionWait = false;
-						return;
-					}
+    private void sendTradeOrder(String accountId, final BigDecimal currentPrice, String positionType) {
+        TradeOrderRequest tradeOrderRequest = new TradeOrderRequest();
+        StopLossOnFill stopLossOnFill = new StopLossOnFill();
+        if ("LONG".equals(positionType)) {
+            BigDecimal potentialStopLoss = currentPrice.subtract(new BigDecimal("0.0001"));
+            if (stopLoss.compareTo(potentialStopLoss) < 0) {
+                stopLoss = potentialStopLoss;
+            }
+        } else {
+            BigDecimal potentialStopLoss = currentPrice.add(new BigDecimal("0.0001"));
+            if (stopLoss.compareTo(potentialStopLoss) > 0) {
+                stopLoss = potentialStopLoss;
+            }
+        }
 
-					openPositionPrice = orderResponse.getOrderFillTransaction().getPrice();
+        stopLossOnFill.setPrice(stopLoss.toString());
+        stopLossOnFill.setTimeInForce("GTC");
+        tradeOrderRequest.setStopLossOnFill(stopLossOnFill);
 
-					tradeId = orderResponse.getOrderCreateTransaction().getId();
+        log.info("Trying to update stoploss to " + stopLoss);
 
-					positionType = "LONG";
-					waitForcandleInsideBands = false;
-					longPositionWait = false;
-					shortPositionWait = false;
+        accountService.postTrade(accountId, tradeOrderRequest, tradeId);
+        log.info("Update Stoploss order to " + stopLoss + ", tradeId: " + tradeId);
+    }
 
-					log.info("Time: " + price.getTime());
-					log.info("Open Position (Long) " + openPositionPrice);
-					log.info("Stop loss: " + stopLoss);
+    private OrderResponse postOrderShort(String accountId, InstrumentType instrument, final BigDecimal currentAskPrice) {
+        OrderRequest orderRequest = new OrderRequest();
+        Order order = new Order();
+        order.setInstrument(instrument.toString());
+        order.setTimeInForce("FOK");
+        order.setUnits("-10000");
+        order.setType("MARKET");
+        order.setPositionFill("DEFAULT");
 
-				} else if (shortPositionWait
-						&& (lastCandle.getMid().getH().compareTo(bollinger.getUpperBand()) < 0) // candlestick
-																								// is
-																								// below
-																								// lowerbadn
-						&& (lastCandle.getMid().getC().compareTo(lastCandle.getMid().getO()) < 0)) { // Candlestick
-																										// is
-																										// red
+        stopLoss = currentAskPrice.add(new BigDecimal("0.0003")).setScale(6, RoundingMode.HALF_DOWN);
 
-					OrderResponse orderResponse = postOrderShort(accountId, instrument, currentAskPrice);
+        StopLossOnFill stopLossOnFill = new StopLossOnFill();
+        stopLossOnFill.setTimeInForce("GTC");
+        stopLossOnFill.setPrice(stopLoss.toString());
 
-					if (orderResponse == null || orderResponse.getOrderFillTransaction() == null) {
-						log.info("Order closed right before opened.");
-						waitForcandleInsideBands = false;
-						shortPositionWait = false;
-						longPositionWait = false;
-						return;
-					}
+        order.setStopLossOnFill(stopLossOnFill);
+        orderRequest.setOrder(order);
+        return accountService.postOrder(accountId, orderRequest);
+    }
 
-					openPositionPrice = orderResponse.getOrderFillTransaction().getPrice();
-					tradeId = orderResponse.getOrderCreateTransaction().getId();
+    private OrderResponse postOrderLong(String accountId, InstrumentType instrument, final BigDecimal currentBidPrice) {
+        OrderRequest orderRequest = new OrderRequest();
+        Order order = new Order();
+        order.setInstrument(instrument.toString());
+        order.setTimeInForce("FOK");
+        order.setUnits("10000");
+        order.setType("MARKET");
+        order.setPositionFill("DEFAULT");
 
-					positionType = "SHORT";
-					waitForcandleInsideBands = false;
-					shortPositionWait = false;
-					longPositionWait = false;
+        stopLoss = currentBidPrice.subtract(new BigDecimal("0.0003")).setScale(6, RoundingMode.HALF_DOWN);
 
-					log.info("Time: " + price.getTime());
-					log.info("Open Position (Short) " + openPositionPrice);
-					log.info("Stop loss: " + stopLoss);
-				}
-			} else {
-				// log.info("Bollinger " + bollinger);
-				// log.info("Candle " + lastCandle);
+        StopLossOnFill stopLossOnFill = new StopLossOnFill();
+        stopLossOnFill.setTimeInForce("GTC");
+        stopLossOnFill.setPrice(stopLoss.toString());
 
-				if (lastCandleTouchedLowerBand(lastCandle, bollinger) && lastCandleTouchedUpperBand(lastCandle, bollinger)) {
-					log.info("Last candle touched upper and lower bands so ignoring.");
-				} else if (lastCandleTouchedLowerBand(lastCandle, bollinger)) {
-					waitForcandleInsideBands = true;
-					longPositionWait = true;
-					shortPositionWait = false;
+        order.setStopLossOnFill(stopLossOnFill);
+        orderRequest.setOrder(order);
+        return accountService.postOrder(accountId, orderRequest);
+    }
 
-					log.info("Time: " + price.getTime());
-					log.info("Waiting for candle to be inside bands before opening position. current price "
-							+ currentMidPrice + "  lower band " + bollinger.getLowerBand());
-				} else if (lastCandleTouchedUpperBand(lastCandle, bollinger)) {
-					waitForcandleInsideBands = true;
-					shortPositionWait = true;
-					longPositionWait = false;
+    private void calculateStrategyResults() {
+        log.info("StopLoss " + stopLoss + " reached");
+        if ("SHORT".equals(positionType)) {
+            BigDecimal winnings = openPositionPrice.subtract(stopLoss);
+            if (winnings.compareTo(BigDecimal.ZERO) > 0) {
+                strategyResults.increaseNumWinPosition();
+                strategyResults.addPartialWin(winnings);
+            } else {
+                strategyResults.increaseNumLosePosition();
+                strategyResults.addPartialLoss(winnings);
+            }
+        } else {
+            BigDecimal winnings = stopLoss.subtract(openPositionPrice);
+            totalEarnings = totalEarnings.add(winnings);
 
-					log.info("Time: " + price.getTime());
-					log.info("Waiting for candle to be inside bands before opening position. current price "
-							+ currentMidPrice + "  higuer band " + bollinger.getUpperBand());
-				}
-			}
+            if (winnings.compareTo(BigDecimal.ZERO) > 0) {
+                strategyResults.increaseNumWinPosition();
+                strategyResults.addPartialWin(winnings);
+            } else {
+                strategyResults.increaseNumLosePosition();
+                strategyResults.addPartialLoss(winnings);
+            }
+        }
+        log.info(strategyResults.toString());
+    }
 
-		}
-	}
+    private boolean isOpenPositions(String accountId) {
+        OpenTrades orderTrades = accountService.getOpenTrades(accountId);
+        if (orderTrades.getTrades().isEmpty()) {
+            return false;
+        } else {
+            tradeId = orderTrades.getTrades().get(0).getId().toString();
+            return true;
+        }
+    }
 
-	private void sendTradeOrder(String accountId, InstrumentType instrument, final BigDecimal currentPrice, String positionType) {
-		TradeOrderRequest tradeOrderRequest = new TradeOrderRequest();
-		StopLossDetail stopLossDetail = new StopLossDetail();
-		if ("LONG".equals(positionType)) {
-			BigDecimal potentialStopLoss = currentPrice.subtract(new BigDecimal("0.0001"));
-			if (stopLoss.compareTo(potentialStopLoss) < 0) {
-				stopLoss = potentialStopLoss;
-			}
-		} else {
-			BigDecimal potentialStopLoss = currentPrice.add(new BigDecimal("0.0001"));
-			if (stopLoss.compareTo(potentialStopLoss) > 0) {
-				stopLoss = potentialStopLoss;
-			}
-		}
+    private void setTraillingStopIfNeeded(String positionType, Price price, String accountId) {
+        BigDecimal potentialEarning;
+        if ("LONG".equals(positionType)) {
+            BigDecimal bidPrice = price.getCloseoutBid();
+            potentialEarning = bidPrice.subtract(openPositionPrice);
+            log.info("Potential earning " + potentialEarning);
+            if (potentialEarning.compareTo(new BigDecimal("0.0005")) > 0) {
+                stopLoss = bidPrice.subtract(new BigDecimal("0.0003"));
+                setTraillingStop(price, accountId, bidPrice);
+            }
+        } else {
+            BigDecimal askPrice = price.getCloseoutAsk();
+            potentialEarning = openPositionPrice.subtract(askPrice);
+            log.info("Potential earning " + potentialEarning);
+            if (potentialEarning.compareTo(new BigDecimal("0.0005")) > 0) {
+                stopLoss = askPrice.add(new BigDecimal("0.0003"));
+                setTraillingStop(price, accountId, askPrice);
+            }
+        }
+    }
 
-		stopLossDetail.setPrice(stopLoss.toString());
-		stopLossDetail.setTimeInForce("GTC");
-		tradeOrderRequest.setStopLoss(stopLossDetail);
+    private void setTraillingStop(Price price, String accountId, BigDecimal bidPrice) {
+        log.info("Time: " + price.getTime());
 
-		log.info("Trying to update stoploss to " + stopLoss);
+        TradeOrderRequest tradeOrderRequest = new TradeOrderRequest();
+        StopLossOnFill stopLossOnFill = new StopLossOnFill();
+        stopLossOnFill.setPrice(stopLoss.toString());
+        stopLossOnFill.setTimeInForce("GTC");
+        tradeOrderRequest.setStopLossOnFill(stopLossOnFill);
 
-		accountService.postTrade(accountId, tradeOrderRequest, tradeId);
-		log.info("Update Stoploss order to " + stopLoss + ", tradeId: " + tradeId);
+        log.info("Trying to update stoploss to " + stopLoss);
 
-	}
+        accountService.postTrade(accountId, tradeOrderRequest, tradeId);
+        log.info("Set Stoploss order to " + stopLoss + ", tradeId:" + tradeId);
 
-	private OrderResponse postOrderShort(String accountId, InstrumentType instrument,
-			final BigDecimal currentAskPrice) {
-		OrderRequest orderRequest = new OrderRequest();
-		Order order = new Order();
-		order.setInstrument(instrument.toString());
-		order.setTimeInForce("FOK");
-		order.setUnits("-10000");
-		order.setType("MARKET");
-		order.setPositionFill("DEFAULT");
+        openPositionPrice = bidPrice;
+    }
 
-		// TrailingStopLossOnFill trailingStopLossOnFill = new
-		// TrailingStopLossOnFill();
-		// trailingStopLossOnFill.setDistance("0.0005");
-		// trailingStopLossOnFill.setTimeInForce("GTC");
+    private boolean lastCandleTouchedLowerBand(Candle candle, BollingerBands bollinger) {
+        return candle.getMid().getL().compareTo(bollinger.getLowerBand()) < 0;
+    }
 
-		stopLoss = currentAskPrice.add(new BigDecimal("0.0003")).setScale(6, RoundingMode.HALF_DOWN);
-
-		StopLossOnFill stopLossOnFill = new StopLossOnFill();
-		stopLossOnFill.setTimeInForce("GTC");
-		stopLossOnFill.setPrice(stopLoss.toString());
-
-		// order.setTrailingStopLossOnFill(trailingStopLossOnFill);
-		order.setStopLossOnFill(stopLossOnFill);
-
-		orderRequest.setOrder(order);
-		OrderResponse orderResponse;
-
-		orderResponse = accountService.postOrder(accountId, orderRequest);
-		return orderResponse;
-	}
-
-	private OrderResponse postOrderLong(String accountId, InstrumentType instrument, final BigDecimal currentBidPrice) {
-		OrderRequest orderRequest = new OrderRequest();
-		Order order = new Order();
-		order.setInstrument(instrument.toString());
-		order.setTimeInForce("FOK");
-		order.setUnits("10000");
-		order.setType("MARKET");
-		order.setPositionFill("DEFAULT");
-		// TrailingStopLossOnFill trailingStopLossOnFill = new
-		// TrailingStopLossOnFill();
-		// trailingStopLossOnFill.setDistance("0.0005");
-		// trailingStopLossOnFill.setTimeInForce("GTC");
-
-		stopLoss = currentBidPrice.subtract(new BigDecimal("0.0003")).setScale(6, RoundingMode.HALF_DOWN);
-
-		StopLossOnFill stopLossOnFill = new StopLossOnFill();
-		stopLossOnFill.setTimeInForce("GTC");
-		stopLossOnFill.setPrice(stopLoss.toString());
-
-		// order.setTrailingStopLossOnFill(trailingStopLossOnFill);
-		order.setStopLossOnFill(stopLossOnFill);
-		orderRequest.setOrder(order);
-		OrderResponse orderResponse;
-
-		orderResponse = accountService.postOrder(accountId, orderRequest);
-		return orderResponse;
-	}
-
-	private void calculateStrategyResults() {
-		log.info("StopLoss " + stopLoss + " reached");
-		if ("SHORT".equals(positionType)) {
-			BigDecimal winnings = openPositionPrice.subtract(stopLoss);
-			if (winnings.compareTo(BigDecimal.ZERO) > 0) {
-				strategyResults.increaseNumWinPosition();
-				strategyResults.addPartialWin(winnings);
-			} else {
-				strategyResults.increaseNumLosePosition();
-				strategyResults.addPartialLoss(winnings);
-			}
-		} else {
-			BigDecimal winnings = stopLoss.subtract(openPositionPrice);
-			totalEarnings = totalEarnings.add(winnings);
-
-			if (winnings.compareTo(BigDecimal.ZERO) > 0) {
-				strategyResults.increaseNumWinPosition();
-				strategyResults.addPartialWin(winnings);
-			} else {
-				strategyResults.increaseNumLosePosition();
-				strategyResults.addPartialLoss(winnings);
-			}
-		}
-		log.info(strategyResults.toString());
-	}
-
-	private boolean isOpenPositions(String accountId) {
-
-		OpenTrades orderTrades = accountService.getOpenTrades(accountId);
-
-		if (orderTrades.getTrades().size() == 0) {
-			return false;
-		} else {
-			tradeId = orderTrades.getTrades().get(0).getId();
-			return true;
-		}
-	}
-
-	private void setTraillingStopIfNeeded(String positionType, Price price, String accountId) {
-
-		BigDecimal potentialEarning;
-		TradeOrderRequest tradeOrderRequest = new TradeOrderRequest();
-		StopLossDetail stopLossDetail = new StopLossDetail();
-		if ("LONG".equals(positionType)) {
-			BigDecimal bidPrice = BigDecimal.valueOf(price.getBids()[0].getPrice());
-			potentialEarning = bidPrice.subtract(openPositionPrice);
-			log.info("Potential earning " + potentialEarning);
-			if (potentialEarning.compareTo(new BigDecimal("0.0005")) > 0) {
-				stopLoss = bidPrice.subtract(new BigDecimal("0.0003"));
-				setTraillingStop(price, accountId, tradeOrderRequest, stopLossDetail, bidPrice);
-			}
-		} else {
-			BigDecimal askPrice = BigDecimal.valueOf(price.getAsks()[price.getAsks().length - 1].getPrice());
-			potentialEarning = openPositionPrice.subtract(askPrice);
-			log.info("Potential earning " + potentialEarning);
-			if (potentialEarning.compareTo(new BigDecimal("0.0005")) > 0) {
-				stopLoss = askPrice.add(new BigDecimal("0.0003"));
-				setTraillingStop(price, accountId, tradeOrderRequest, stopLossDetail, askPrice);
-			}
-		}
-	}
-
-	private void setTraillingStop(Price price, String accountId, TradeOrderRequest tradeOrderRequest, StopLossDetail stopLossDetail,
-			BigDecimal bidPrice) {
-		log.info("Time: " + price.getTime());
-		
-
-		stopLossDetail.setPrice(stopLoss.toString());
-		stopLossDetail.setTimeInForce("GTC");
-		tradeOrderRequest.setStopLoss(stopLossDetail);
-
-		log.info("Trying to update stoploss to " + stopLoss);
-
-		accountService.postTrade(accountId, tradeOrderRequest, tradeId);
-		log.info("Set Stoploss order to " + stopLoss + ", tradeId:" + tradeId);
-
-		openPositionPrice = bidPrice;
-	}
-
-	private boolean lastCandleTouchedLowerBand(Candle candle, BollingerBands bollinger) {
-		return candle.getMid().getL().compareTo(bollinger.getLowerBand()) < 0;
-	}
-
-	private boolean lastCandleTouchedUpperBand(Candle candle, BollingerBands bollinger) {
-		return candle.getMid().getH().compareTo(bollinger.getUpperBand()) > 0;
-	}
+    private boolean lastCandleTouchedUpperBand(Candle candle, BollingerBands bollinger) {
+        return candle.getMid().getH().compareTo(bollinger.getUpperBand()) > 0;
+    }
 }

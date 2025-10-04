@@ -1,121 +1,83 @@
 package sendaTrader76.bot.dto;
 
+import com.oanda.v20.pricing.ClientPrice;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class Price
-{
-	private ZonedDateTime time;
-
-    private UnitsAvailable unitsAvailable;
-
+public class Price {
+    private ZonedDateTime time;
     private String status;
-
     private BigDecimal closeoutBid;
-
-    private Asks[] asks;
-
-    private Bids[] bids;
-
+    private BigDecimal closeoutAsk;
     private String instrument;
 
-    private QuoteHomeConversionFactory quoteHomeConversionFactory;
+    public Price(ClientPrice clientPrice) {
+        this.time = ZonedDateTime.parse(clientPrice.getTime());
+        this.status = clientPrice.getStatus().toString();
+        this.closeoutBid = clientPrice.getCloseoutBid().bigDecimalValue();
+        this.closeoutAsk = clientPrice.getCloseoutAsk().bigDecimalValue();
+        this.instrument = clientPrice.getInstrument().toString();
+    }
 
-    private BigDecimal closeoutAsk;
+    public Price(ZonedDateTime time, BigDecimal bid, BigDecimal ask) {
+        this.time = time;
+        this.closeoutBid = bid;
+        this.closeoutAsk = ask;
+        this.status = "tradeable";
+        this.instrument = "EUR_USD";
+    }
 
-    public ZonedDateTime getTime ()
-    {
+    public ZonedDateTime getTime() {
         return time;
     }
 
-    public void setTime (ZonedDateTime time)
-    {
+    public void setTime(ZonedDateTime time) {
         this.time = time;
     }
 
-    public UnitsAvailable getUnitsAvailable ()
-    {
-        return unitsAvailable;
-    }
-
-    public void setUnitsAvailable (UnitsAvailable unitsAvailable)
-    {
-        this.unitsAvailable = unitsAvailable;
-    }
-
-    public String getStatus ()
-    {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus (String status)
-    {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public BigDecimal getCloseoutBid ()
-    {
+    public BigDecimal getCloseoutBid() {
         return closeoutBid;
     }
 
-    public void setCloseoutBid (BigDecimal closeoutBid)
-    {
+    public void setCloseoutBid(BigDecimal closeoutBid) {
         this.closeoutBid = closeoutBid;
     }
 
-    public Asks[] getAsks ()
-    {
-        return asks;
-    }
-
-    public void setAsks (Asks[] asks)
-    {
-        this.asks = asks;
-    }
-
-    public Bids[] getBids ()
-    {
-        return bids;
-    }
-
-    public void setBids (Bids[] bids)
-    {
-        this.bids = bids;
-    }
-
-    public String getInstrument ()
-    {
-        return instrument;
-    }
-
-    public void setInstrument (String instrument)
-    {
-        this.instrument = instrument;
-    }
-
-    public QuoteHomeConversionFactory getQuoteHomeConversionFactory ()
-    {
-        return quoteHomeConversionFactory;
-    }
-
-    public void setQuoteHomeConversionFactory (QuoteHomeConversionFactory quoteHomeConversionFactory)
-    {
-        this.quoteHomeConversionFactory = quoteHomeConversionFactory;
-    }
-
-    public BigDecimal getCloseoutAsk ()
-    {
+    public BigDecimal getCloseoutAsk() {
         return closeoutAsk;
     }
 
-    public void setCloseoutAsk (BigDecimal closeoutAsk)
-    {
+    public void setCloseoutAsk(BigDecimal closeoutAsk) {
         this.closeoutAsk = closeoutAsk;
     }
 
+    public String getInstrument() {
+        return instrument;
+    }
+
+    public void setInstrument(String instrument) {
+        this.instrument = instrument;
+    }
+
     @Override
-    public String toString()
-    {
-        return "ClassPojo [time = "+time+", unitsAvailable = "+unitsAvailable+", status = "+status+", closeoutBid = "+closeoutBid+", asks = "+asks.toString()+", bids = "+bids.toString()+", instrument = "+instrument+", QuoteHomeConversionFactory = "+quoteHomeConversionFactory+", closeoutAsk = "+closeoutAsk+"]";
+    public String toString() {
+        return "Price{" +
+                "time=" + time +
+                ", status='" + status + '\'' +
+                ", closeoutBid=" + closeoutBid +
+                ", closeoutAsk=" + closeoutAsk +
+                ", instrument='" + instrument + '\'' +
+                '}';
     }
 }
