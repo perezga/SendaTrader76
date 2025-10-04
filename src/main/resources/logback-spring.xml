@@ -1,0 +1,41 @@
+<configuration>
+	<!--  include resource="org/springframework/boot/logging/logback/base.xml" / -->
+	
+	<property name="LOG_FILE" value="STrader76.log" />
+	
+	<logger name="org.springframework" level="INFO" />
+	<logger name="sendaTrader76" level="INFO" />
+	
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+			</Pattern>
+		</layout>
+	</appender>
+	
+	<appender name="APPENDER"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} -
+				%msg%n
+			</Pattern>
+		</layout>
+		<file>${LOG_FILE}</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE}.%d</fileNamePattern>
+			<maxHistory>20</maxHistory>
+		</rollingPolicy>
+	</appender>
+	
+	<!-- logger name="strade76.bot...." level="info" additivity="false">
+		<appender-ref ref="SPECIFIC_LOGGER" />
+		<appender-ref ref="STDOUT" />
+	</logger -->
+
+	<root level="INFO">
+		<appender-ref ref="APPENDER" />
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>
