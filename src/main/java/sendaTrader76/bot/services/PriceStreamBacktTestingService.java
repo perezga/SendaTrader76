@@ -75,6 +75,8 @@ public class PriceStreamBacktTestingService {
 				accountService.setBidPrice(bid.getPrice(), priceDate);
 
 				strategyExecutor.PriceConsumer(price);
+
+				Thread.sleep(100);
 			}
 		}
 	}

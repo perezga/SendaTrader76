@@ -1,0 +1,5 @@
+/home/jperez/src/SendaTrader76/src/test/java/sendaTrader76/bot/config/AppConfigTest.java
+/home/jperez/src/SendaTrader76/src/test/java/sendaTrader76/bot/indicators/BollingerIndicatorTest.java
+/home/jperez/src/SendaTrader76/src/test/java/sendaTrader76/bot/services/candleChartTest.java
+/home/jperez/src/SendaTrader76/src/test/java/sendaTrader76/bot/strategies/BollingerStrategyWithTickDataTest.java
+/home/jperez/src/SendaTrader76/src/test/java/sendaTrader76/bot/stubs/AccountServiceStub.java
