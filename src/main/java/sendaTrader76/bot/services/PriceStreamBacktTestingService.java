@@ -31,9 +31,9 @@ public class PriceStreamBacktTestingService {
 	private List<CandleChart> candleChartList;
 
 	private AccountBackTestingService accountService;
-	
+
 	private StrategyExecutor strategyExecutor;
-	
+
 	public PriceStreamBacktTestingService(AccountBackTestingService accountService,
 			List<CandleChart> candleChartList, StrategyExecutor strategyExecutor) {
 		this.candleChartList = candleChartList;
@@ -46,13 +46,14 @@ public class PriceStreamBacktTestingService {
 
 		// for (int i = 6; i < 10; i++) {
 		try (BufferedReader br = Files.newBufferedReader(
-				Paths.get(getClass().getClassLoader().getResource("DAT_ASCII_EURUSD_T_201606.csv").toURI()))) {
+				Paths.get(getClass().getClassLoader().getResource("2016-12-02T18:29:03.513execution.csv").toURI()))) {
 			String line;
 
 			while ((line = br.readLine()) != null) {
 				// E.x. 20161003 204031840,1.120760,1.120810,0
 				String[] lineSplit = StringUtils.split(line, ",");
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS").withZone(ZoneId.of("GMT-5"));
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS")
+						.withZone(ZoneId.of("GMT-5"));
 
 				ZonedDateTime priceDate = ZonedDateTime.parse(lineSplit[0], formatter);
 
@@ -72,7 +73,7 @@ public class PriceStreamBacktTestingService {
 				candleChartList.forEach(candleChart -> candleChart.addCandle(price));
 				accountService.setAskPrice(ask.getPrice(), priceDate);
 				accountService.setBidPrice(bid.getPrice(), priceDate);
-				
+
 				strategyExecutor.PriceConsumer(price);
 			}
 		}

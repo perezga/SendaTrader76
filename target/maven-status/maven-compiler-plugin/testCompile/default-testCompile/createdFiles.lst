@@ -1,0 +1,5 @@
+sendaTrader76/bot/strategies/BollingerStrategyWithTickDataTest.class
+sendaTrader76/bot/stubs/AccountServiceStub.class
+sendaTrader76/bot/config/AppConfigTest.class
+sendaTrader76/bot/services/candleChartTest.class
+sendaTrader76/bot/indicators/BollingerIndicatorTest.class

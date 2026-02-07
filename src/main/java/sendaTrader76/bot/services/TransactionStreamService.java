@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,22 +36,24 @@ public class TransactionStreamService {
 
 	private static final Log logger = LogFactory.getLog(TransactionStreamService.class);
 
-	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS").withZone(ZoneId.of("GMT-5"));
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS")
+			.withZone(ZoneId.of("GMT-5"));
 
 	private RestTemplate restTemplateStream;
 
 	private ObjectMapper objectMapper;
 
 	private SimpMessagingTemplate template;
-	
+
 	private Result result = new Result();
-	
+
 	private BigDecimal price;
 
 	private boolean retry = true;
 
 	@Autowired
-	public TransactionStreamService(RestTemplate restTemplateStream, ObjectMapper objectMapper, SimpMessagingTemplate template) {
+	public TransactionStreamService(RestTemplate restTemplateStream, ObjectMapper objectMapper,
+			SimpMessagingTemplate template) {
 		this.restTemplateStream = restTemplateStream;
 		this.objectMapper = objectMapper;
 		this.template = template;
@@ -97,8 +99,9 @@ public class TransactionStreamService {
 	private class EventResponseExtractor implements ResponseExtractor<String> {
 
 		private String webSocketTopicPositions;
+
 		public EventResponseExtractor(String webSocketTopicPositions) {
-			this.webSocketTopicPositions= webSocketTopicPositions;
+			this.webSocketTopicPositions = webSocketTopicPositions;
 		}
 
 		@Override
@@ -113,34 +116,35 @@ public class TransactionStreamService {
 		}
 	}
 
-	public void processTransaction(String line, String webSocketTopicPositions) throws IOException, JsonParseException, JsonMappingException {
+	public void processTransaction(String line, String webSocketTopicPositions)
+			throws IOException, JsonParseException, JsonMappingException {
 		if (!line.contains("HEARTBEAT")) {
 			Position position = new Position();
-			
-			if (line.contains("ORDER_FILL")){
-					OrderFillTransaction orderFillTransaction = objectMapper.readValue(line, OrderFillTransaction.class);
-					position.setPrice(orderFillTransaction.getPrice());
-					position.setTime(orderFillTransaction.getTime().toInstant().toEpochMilli());
-					
-					if (orderFillTransaction.getReason().equals("STOP_LOSS_ORDER")){
-						position.setType(PositionType.STOP_LOSS);
-						
-						updateResults(orderFillTransaction);									
 
-						template.convertAndSend(webSocketTopicPositions, result);
-						
-					} else if (orderFillTransaction.getReason().equals("MARKET_ORDER")){
-						if (orderFillTransaction.getUnits().compareTo(BigDecimal.ZERO) < 0){
-							position.setType(PositionType.SHORT);										
-						} else {
-							position.setType(PositionType.LONG);
-						}
-						price = orderFillTransaction.getPrice();
+			if (line.contains("ORDER_FILL")) {
+				OrderFillTransaction orderFillTransaction = objectMapper.readValue(line, OrderFillTransaction.class);
+				position.setPrice(orderFillTransaction.getPrice());
+				position.setTime(orderFillTransaction.getTime().toInstant().toEpochMilli());
+
+				if (orderFillTransaction.getReason().equals("STOP_LOSS_ORDER")) {
+					position.setType(PositionType.STOP_LOSS);
+
+					updateResults(orderFillTransaction);
+
+					template.convertAndSend(webSocketTopicPositions, result);
+
+				} else if (orderFillTransaction.getReason().equals("MARKET_ORDER")) {
+					if (orderFillTransaction.getUnits().compareTo(BigDecimal.ZERO) < 0) {
+						position.setType(PositionType.SHORT);
+					} else {
+						position.setType(PositionType.LONG);
 					}
-			} else if(line.contains("STOP_LOSS_ORDER") && line.contains("REPLACEMENT")){
-				
+					price = orderFillTransaction.getPrice();
+				}
+			} else if (line.contains("STOP_LOSS_ORDER") && line.contains("REPLACEMENT")) {
+
 				ReplacementOrder replacementOrder = objectMapper.readValue(line, ReplacementOrder.class);
-				
+
 				position.setPrice(replacementOrder.getPrice());
 				position.setTime(replacementOrder.getTime().toInstant().toEpochMilli());
 				position.setType(PositionType.TRAILLING_STOP);
@@ -150,23 +154,23 @@ public class TransactionStreamService {
 			template.convertAndSend("/topic/positions", position);
 			// eventBus.post(price);
 		} else {
-			Heartbeat heartbeat = objectMapper.readValue(line,Heartbeat.class);
+			Heartbeat heartbeat = objectMapper.readValue(line, Heartbeat.class);
 			logger.debug("HEARTBEAT " + heartbeat);
 		}
 	}
 
 	private void updateResults(OrderFillTransaction orderFillTransaction) {
 		BigDecimal partialPrice;
-		if(orderFillTransaction.getUnits().compareTo(BigDecimal.ZERO) < 0){
+		if (orderFillTransaction.getUnits().compareTo(BigDecimal.ZERO) < 0) {
 			partialPrice = orderFillTransaction.getPrice().subtract(price);
-			result.setWinPositions(result.getWinPositions()+1);
+			result.setWinPositions(result.getWinPositions() + 1);
 			result.setPartialType(PositionType.LONG);
-			
+
 		} else {
 			partialPrice = price.subtract(orderFillTransaction.getPrice());
-			result.setLosePositions(result.getLosePositions()+1);
+			result.setLosePositions(result.getLosePositions() + 1);
 			result.setPartialType(PositionType.SHORT);
-		}								
+		}
 
 		result.setPartial(partialPrice);
 		result.setTotal(result.getTotal().add(partialPrice));

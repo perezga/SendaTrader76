@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import sendaTrader76.bot.dto.BollingerBands;
 import sendaTrader76.bot.dto.Candle;
@@ -45,10 +45,10 @@ public class BollingerIndicatorTest {
 		candles.add(candle5);
 
 		BollingerBands boll = b.calculate(candles, 2);
-		
-		Assert.assertEquals(new BigDecimal("27.808305"), boll.getUpperBand());
-		Assert.assertEquals(new BigDecimal("26.60"), boll.getMiddleBand());
-		Assert.assertEquals(new BigDecimal("25.391695"), boll.getLowerBand());
-		
+
+		Assertions.assertEquals(new BigDecimal("27.808305"), boll.getUpperBand());
+		Assertions.assertEquals(new BigDecimal("26.60"), boll.getMiddleBand());
+		Assertions.assertEquals(new BigDecimal("25.391695"), boll.getLowerBand());
+
 	}
 }

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
 
 import sendaTrader76.bot.dto.Candle;
@@ -12,9 +12,8 @@ import sendaTrader76.bot.dto.CandleJS;
 import sendaTrader76.bot.dto.GranuarityType;
 
 public class CandleS1Chart extends CandleChart {
-	
-	
-	public CandleS1Chart(SimpMessagingTemplate template, String webSocketTopic) {
+
+	public CandleS1Chart(SimpMessageSendingOperations template, String webSocketTopic) {
 		super(template, webSocketTopic);
 	}
 
@@ -24,10 +23,10 @@ public class CandleS1Chart extends CandleChart {
 	}
 
 	@Override
-	public int getCurrentTimeUnit(ZonedDateTime candleTime)  {
+	public int getCurrentTimeUnit(ZonedDateTime candleTime) {
 		return candleTime.getSecond();
 	}
-	
+
 	@Override
 	GranuarityType getGranularityType() {
 		return GranuarityType.S1;

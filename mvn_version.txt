@@ -1,0 +1,5 @@
+Apache Maven 3.9.11 (Red Hat 3.9.11-5)
+Maven home: /usr/share/maven
+Java version: 25.0.2, vendor: Red Hat, Inc., runtime: /usr/lib/jvm/java-25-openjdk
+Default locale: en_GB, platform encoding: UTF-8
+OS name: "linux", version: "6.18.8-200.fc43.x86_64", arch: "amd64", family: "unix"

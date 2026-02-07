@@ -1,0 +1,205 @@
+2017-10-07 17:40:14 [main] INFO  sendaTrader76.bot.Application -
+				Starting Application on iib9999999999 with PID 4009 (/home/jperez/src/sendaTrader76/target/classes started by jperez in /home/jperez/src/sendaTrader76)
+2017-10-07 17:40:14 [main] INFO  sendaTrader76.bot.Application -
+				No active profile set, falling back to default profiles: default
+2017-10-07 17:40:14 [main] INFO  o.s.b.c.e.AnnotationConfigEmbeddedWebApplicationContext -
+				Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@f5eb120: startup date [Sat Oct 07 17:40:14 CEST 2017]; root of context hierarchy
+2017-10-07 17:40:19 [background-preinit] INFO  o.h.validator.internal.util.Version -
+				HV000001: Hibernate Validator 5.2.4.Final
+2017-10-07 17:40:23 [main] INFO  o.s.b.c.e.t.TomcatEmbeddedServletContainer -
+				Tomcat initialized with port(s): 8080 (http)
+2017-10-07 17:40:23 [main] INFO  o.a.catalina.core.StandardService -
+				Starting service Tomcat
+2017-10-07 17:40:23 [main] INFO  o.a.catalina.core.StandardEngine -
+				Starting Servlet Engine: Apache Tomcat/8.5.5
+2017-10-07 17:40:24 [localhost-startStop-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] -
+				Initializing Spring embedded WebApplicationContext
+2017-10-07 17:40:24 [localhost-startStop-1] INFO  o.s.web.context.ContextLoader -
+				Root WebApplicationContext: initialization completed in 9656 ms
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.ServletRegistrationBean -
+				Mapping servlet: 'dispatcherServlet' to [/]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'metricsFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'characterEncodingFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'httpPutFormContentFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'requestContextFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'webRequestLoggingFilter' to: [/*]
+2017-10-07 17:40:25 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean -
+				Mapping filter: 'applicationContextIdFilter' to: [/*]
+2017-10-07 17:40:26 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Initializing ExecutorService  'clientInboundChannelExecutor'
+2017-10-07 17:40:26 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Initializing ExecutorService  'clientOutboundChannelExecutor'
+2017-10-07 17:40:26 [main] INFO  o.s.s.c.ThreadPoolTaskScheduler -
+				Initializing ExecutorService  'messageBrokerTaskScheduler'
+2017-10-07 17:40:27 [main] INFO  o.s.w.s.s.s.WebSocketHandlerMapping -
+				Mapped URL path [/strader-websocket/**] onto handler of type [class org.springframework.web.socket.sockjs.support.SockJsHttpRequestHandler]
+2017-10-07 17:40:27 [main] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Initializing ExecutorService  'brokerChannelExecutor'
+2017-10-07 17:40:27 [main] INFO  o.s.w.s.m.WebSocketAnnotationMethodMessageHandler -
+				Mapped "{[/position/example],messageType=[MESSAGE]}" onto public sendaTrader76.bot.dto.Greeting sendaTrader76.bot.resources.AccountWebSocketController.greeting(java.lang.String)
+2017-10-07 17:40:27 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerAdapter -
+				Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@f5eb120: startup date [Sat Oct 07 17:40:14 CEST 2017]; root of context hierarchy
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/accounts/{accountId}/pricing],methods=[GET]}" onto public sendaTrader76.bot.dto.PricesResponse sendaTrader76.bot.resources.HelloWorldController.getPrice(java.lang.String,sendaTrader76.bot.dto.InstrumentType)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/accounts/{accountId}/orders],methods=[POST]}" onto public sendaTrader76.bot.dto.OrderResponse sendaTrader76.bot.resources.HelloWorldController.postOrder(java.lang.String,sendaTrader76.bot.dto.OrderRequest)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/accounts],methods=[GET]}" onto public sendaTrader76.bot.dto.Accounts sendaTrader76.bot.resources.HelloWorldController.getAccounts()
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/accounts/{accountId}],methods=[GET]}" onto public sendaTrader76.bot.dto.AccountDetail sendaTrader76.bot.resources.HelloWorldController.getAccount(java.lang.String)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/accounts/candles],methods=[GET]}" onto public sendaTrader76.bot.dto.CandleResponse sendaTrader76.bot.resources.HelloWorldController.getCandles(sendaTrader76.bot.dto.InstrumentType,java.lang.Integer,sendaTrader76.bot.dto.GranuarityType,sendaTrader76.bot.dto.CandleFormat)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/error],produces=[text/html]}" onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.m.m.a.RequestMappingHandlerMapping -
+				Mapped "{[/error]}" onto public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.h.SimpleUrlHandlerMapping -
+				Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.h.SimpleUrlHandlerMapping -
+				Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-10-07 17:40:28 [main] INFO  o.s.w.s.h.SimpleUrlHandlerMapping -
+				Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2017-10-07 17:40:28 [main] INFO  o.s.b.a.w.WebMvcAutoConfiguration$WelcomePageHandlerMapping -
+				Adding welcome page: class path resource [static/index.html]
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/mappings || /mappings.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/heapdump || /heapdump.json],methods=[GET],produces=[application/octet-stream]}" onto public void org.springframework.boot.actuate.endpoint.mvc.HeapdumpMvcEndpoint.invoke(boolean,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException,javax.servlet.ServletException
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/health || /health.json],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.HealthMvcEndpoint.invoke(java.security.Principal)
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/metrics/{name:.*}],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.MetricsMvcEndpoint.value(java.lang.String)
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/metrics || /metrics.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/configprops || /configprops.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/trace || /trace.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/env/{name:.*}],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EnvironmentMvcEndpoint.value(java.lang.String)
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/env || /env.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/beans || /beans.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/dump || /dump.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/info || /info.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:29 [main] INFO  o.s.b.a.e.mvc.EndpointHandlerMapping -
+				Mapped "{[/autoconfig || /autoconfig.json],methods=[GET],produces=[application/json]}" onto public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()
+2017-10-07 17:40:30 [main] INFO  o.s.j.e.a.AnnotationMBeanExporter -
+				Registering beans for JMX exposure on startup
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Registering beans for JMX exposure on startup
+2017-10-07 17:40:30 [main] INFO  o.s.c.s.DefaultLifecycleProcessor -
+				Starting beans in phase 0
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'requestMappingEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=requestMappingEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'environmentEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=environmentEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'healthEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=healthEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'beansEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=beansEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'infoEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=infoEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'metricsEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=metricsEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'traceEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=traceEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'dumpEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=dumpEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'autoConfigurationReportEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=autoConfigurationReportEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Located managed bean 'configurationPropertiesReportEndpoint': registering with JMX server as MBean [org.springframework.boot:type=Endpoint,name=configurationPropertiesReportEndpoint]
+2017-10-07 17:40:30 [main] INFO  o.s.c.s.DefaultLifecycleProcessor -
+				Starting beans in phase 2147483647
+2017-10-07 17:40:30 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				Starting...
+2017-10-07 17:40:30 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [DefaultSubscriptionRegistry[cache[0 destination(s)], registry[0 sessions]]]]
+2017-10-07 17:40:30 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				Started.
+2017-10-07 17:40:30 [main] INFO  o.a.coyote.http11.Http11NioProtocol -
+				Initializing ProtocolHandler ["http-nio-8080"]
+2017-10-07 17:40:30 [main] INFO  o.a.coyote.http11.Http11NioProtocol -
+				Starting ProtocolHandler [http-nio-8080]
+2017-10-07 17:40:31 [main] INFO  o.a.tomcat.util.net.NioSelectorPool -
+				Using a shared selector for servlet write/read
+2017-10-07 17:40:31 [main] INFO  o.s.b.c.e.t.TomcatEmbeddedServletContainer -
+				Tomcat started on port(s): 8080 (http)
+2017-10-07 17:40:31 [main] INFO  sendaTrader76.bot.Application -
+				Here code to execute after app starts...%s
+2017-10-07 17:40:31 [main] INFO  o.s.s.a.AnnotationAsyncExecutionInterceptor -
+				More than one TaskExecutor bean found within the context, and none is named 'taskExecutor'. Mark one of them as primary or name it 'taskExecutor' (possibly as an alias) in order to use it for async processing: [clientInboundChannelExecutor, clientOutboundChannelExecutor, brokerChannelExecutor, messageBrokerTaskScheduler]
+2017-10-07 17:40:31 [SimpleAsyncTaskExecutor-1] INFO  s.b.s.TransactionStreamService -
+				Starting transaction stream...
+2017-10-07 17:40:32 [main] INFO  sendaTrader76.bot.Application -
+				Started Application in 23.279 seconds (JVM running for 56.928)
+2017-10-07 17:40:32 [SimpleAsyncTaskExecutor-2] INFO  s.bot.services.PriceStreamService -
+				Starting price stream...
+2017-10-07 17:40:44 [SimpleAsyncTaskExecutor-2] WARN  s.bot.services.PriceStreamService -
+				Exception while reading event stream.
+org.springframework.web.client.HttpServerErrorException: 503 Service Unavailable
+	at org.springframework.web.client.DefaultResponseErrorHandler.handleError(DefaultResponseErrorHandler.java:94)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:667)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:620)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:580)
+	at sendaTrader76.bot.services.PriceStreamService.startPriceService(PriceStreamService.java:74)
+	at sendaTrader76.bot.services.PriceStreamService$$FastClassBySpringCGLIB$$36c0b64d.invoke(<generated>)
+	at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:720)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:157)
+	at org.springframework.aop.interceptor.AsyncExecutionInterceptor$1.call(AsyncExecutionInterceptor.java:115)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.lang.Thread.run(Thread.java:745)
+2017-10-07 17:40:45 [SimpleAsyncTaskExecutor-2] INFO  s.bot.services.PriceStreamService -
+				Starting price stream...
+2017-10-07 17:41:06 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] -
+				Initializing Spring FrameworkServlet 'dispatcherServlet'
+2017-10-07 17:41:06 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet -
+				FrameworkServlet 'dispatcherServlet': initialization started
+2017-10-07 17:41:06 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet -
+				FrameworkServlet 'dispatcherServlet': initialization completed in 21 ms
+2017-10-07 17:41:27 [MessageBroker-4] INFO  o.s.w.s.c.WebSocketMessageBrokerStats -
+				WebSocketSession[2 current WS(2)-HttpStream(0)-HttpPoll(0), 2 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(2)-CONNECTED(2)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 8, active threads = 0, queued tasks = 0, completed tasks = 12], outboundChannelpool size = 2, active threads = 0, queued tasks = 0, completed tasks = 2], sockJsScheduler[pool size = 4, active threads = 1, queued tasks = 3, completed tasks = 3]
+2017-10-07 17:42:09 [clientInboundChannel-5] INFO  s.b.r.AccountWebSocketController -
+				LOG prueba
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.b.c.e.AnnotationConfigEmbeddedWebApplicationContext -
+				Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@f5eb120: startup date [Sat Oct 07 17:40:14 CEST 2017]; root of context hierarchy
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.c.s.DefaultLifecycleProcessor -
+				Stopping beans in phase 2147483647
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				Stopping...
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [DefaultSubscriptionRegistry[cache[0 destination(s)], registry[0 sessions]]]]
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.m.s.b.SimpleBrokerMessageHandler -
+				Stopped.
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.c.s.DefaultLifecycleProcessor -
+				Stopping beans in phase 0
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Unregistering JMX-exposed beans on shutdown
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.b.a.e.jmx.EndpointMBeanExporter -
+				Unregistering JMX-exposed beans
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.j.e.a.AnnotationMBeanExporter -
+				Unregistering JMX-exposed beans on shutdown
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Shutting down ExecutorService 'brokerChannelExecutor'
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.s.c.ThreadPoolTaskScheduler -
+				Shutting down ExecutorService 'messageBrokerTaskScheduler'
+2017-10-07 17:43:11 [Thread-2] INFO  s.b.s.TransactionStreamService -
+				retry set to false
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Shutting down ExecutorService 'clientOutboundChannelExecutor'
+2017-10-07 17:43:11 [Thread-2] INFO  o.s.s.c.ThreadPoolTaskExecutor -
+				Shutting down ExecutorService 'clientInboundChannelExecutor'
+2017-10-07 17:43:11 [Thread-2] INFO  s.bot.services.PriceStreamService -
+				retry set to false

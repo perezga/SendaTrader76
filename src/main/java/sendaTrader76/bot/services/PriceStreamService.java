@@ -14,7 +14,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +40,8 @@ public class PriceStreamService {
 
 	private static final Log logger = LogFactory.getLog(PriceStreamService.class);
 
-	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS").withZone(ZoneId.of("GMT-5"));
+	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd HHmmssSSS")
+			.withZone(ZoneId.of("GMT-5"));
 
 	private RestTemplate restTemplateStream;
 
@@ -51,7 +52,8 @@ public class PriceStreamService {
 	private boolean retry = true;
 
 	@Autowired
-	public PriceStreamService(RestTemplate restTemplateStream, @Qualifier(value = "PriceEURUSD") EventBus eventBus, ObjectMapper objectMapper) {
+	public PriceStreamService(RestTemplate restTemplateStream, @Qualifier(value = "PriceEURUSD") EventBus eventBus,
+			ObjectMapper objectMapper) {
 		this.restTemplateStream = restTemplateStream;
 		this.eventBus = eventBus;
 		this.objectMapper = objectMapper;

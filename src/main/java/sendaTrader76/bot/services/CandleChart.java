@@ -5,7 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
 
 import sendaTrader76.bot.dto.Candle;
@@ -19,13 +19,13 @@ public abstract class CandleChart {
 	public int previousMinute = -1;
 
 	public List<Candle> candleHistory = new ArrayList<Candle>();
-	
-	public SimpMessagingTemplate template;
-	
+
+	public SimpMessageSendingOperations template;
+
 	public String webSocketTopic;
-	
-	public CandleChart(SimpMessagingTemplate template, String webSocketTopic ){
-		this.template= template;
+
+	public CandleChart(SimpMessageSendingOperations template, String webSocketTopic) {
+		this.template = template;
 		this.webSocketTopic = webSocketTopic;
 	}
 
@@ -60,7 +60,7 @@ public abstract class CandleChart {
 			if (!candleHistory.isEmpty()) {
 				Candle previousCandle = candleHistory.get(candleHistory.size() - 1);
 				previousCandle.setComplete(true);
-				
+
 				postProcess(previousCandle);
 
 			}
@@ -87,7 +87,7 @@ public abstract class CandleChart {
 			updateCandle(candleTime, priceMid, lastCandle);
 		}
 	}
-	
+
 	abstract public int getCurrentTimeUnit(ZonedDateTime candleTime);
 
 	abstract ZonedDateTime getTruncatedTime(ZonedDateTime candleTime);
@@ -115,7 +115,7 @@ public abstract class CandleChart {
 		}
 
 		candle.getMid().setC(priceMid);
-		//candle.setTime(time);
+		// candle.setTime(time);
 		if (candle.getMid().getH().compareTo(priceMid) < 0) {
 			candle.getMid().setH(priceMid);
 		}
@@ -149,7 +149,7 @@ public abstract class CandleChart {
 		}
 		return candleList;
 	}
-	
+
 	abstract GranuarityType getGranularityType();
 
 }
